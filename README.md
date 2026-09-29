@@ -59,6 +59,13 @@ npm run start:dev
 
 In Swagger, call `POST /auth/login`, click **Authorize**, paste the `accessToken`, then add an AI provider with `POST /admin/providers` before using chat.
 
+### API docs without running the app
+
+| File | What |
+|---|---|
+| [`docs/openapi.json`](docs/openapi.json) | Full OpenAPI 3 spec (all 55 endpoints). Paste it into [editor.swagger.io](https://editor.swagger.io) to browse it. |
+| [`docs/EchoGPT.postman_collection.json`](docs/EchoGPT.postman_collection.json) | Postman collection. Import it, run **Auth → Log in** (pre-filled with the seeded admin), and the token is saved automatically for every other request. |
+
 ### Run everything in Docker
 
 ```bash

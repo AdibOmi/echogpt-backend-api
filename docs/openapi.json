@@ -1,0 +1,5683 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "operationId": "AppController_getInfo_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "name": "EchoGPT API",
+                    "version": "v1",
+                    "docs": "/docs",
+                    "health": "/api/v1/health"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "API info",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "Creates a USER with a FREE subscription, sends a verification email, and logs the user in.",
+        "operationId": "AuthController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register a new account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Account is disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Log in with email and password",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "Rotates the refresh token: the old one stops working. Re-using an old refresh token revokes ALL sessions of the user.",
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, revoked or reused refresh token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Exchange a refresh token for a new token pair",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Log out the current device (revokes its session)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout-all": {
+      "post": {
+        "operationId": "AuthController_logoutAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Log out from every device",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "AuthController_verifyEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token invalid or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify email address with the emailed token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/resend-verification": {
+      "post": {
+        "operationId": "AuthController_resendVerification_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email already verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Send a new verification email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "operationId": "UsersController_getProfile_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get my profile (includes role and current plan)",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateProfile_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update my profile",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "description": "Requires the current password. This cannot be undone.",
+        "operationId": "UsersController_deleteAccount_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Account deleted"
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete my account permanently",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/me/password": {
+      "patch": {
+        "description": "Requires the current password. Logs out all other devices.",
+        "operationId": "UsersController_changePassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or new password equals current",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Change my password",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/users/me/sessions": {
+      "get": {
+        "operationId": "UsersController_listSessions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List my active sessions (logged-in devices)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "SubscriptionsController_listPlans_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List available plans (Free & Premium)",
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/subscriptions/me": {
+      "get": {
+        "operationId": "SubscriptionsController_getMine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get my current subscription status",
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/subscriptions/me/history": {
+      "get": {
+        "operationId": "SubscriptionsController_history_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get my subscription history (newest first)",
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/subscriptions/me/change": {
+      "post": {
+        "description": "Cancels the current subscription and starts a new one. Paid plans run for 30 days, then fall back to Free automatically.",
+        "operationId": "SubscriptionsController_changePlan_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Already on that plan\n\nRequest body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Plan not available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Concurrent plan change",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Upgrade or downgrade my plan",
+        "tags": [
+          "Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/usage/me": {
+      "get": {
+        "operationId": "SubscriptionsController_getUsage_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get my usage and remaining requests for today",
+        "tags": [
+          "Subscriptions",
+          "Usage"
+        ]
+      }
+    },
+    "/api/v1/providers": {
+      "get": {
+        "operationId": "AiProvidersController_listAvailable_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableProviderDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List enabled AI providers and their models",
+        "tags": [
+          "AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers": {
+      "post": {
+        "operationId": "AdminAiProvidersController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAiProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Name already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Add an AI provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      },
+      "get": {
+        "operationId": "AdminAiProvidersController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AiProviderDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List all AI providers (API keys are never returned)",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/health-check": {
+      "post": {
+        "operationId": "AdminAiProvidersController_healthCheckAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthCheckResultDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Health-check every enabled provider in parallel",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{id}": {
+      "get": {
+        "operationId": "AdminAiProvidersController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get one AI provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      },
+      "patch": {
+        "description": "Send `apiKey` to rotate the key; omit it to keep the current one.",
+        "operationId": "AdminAiProvidersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAiProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Edit an AI provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminAiProvidersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "Cannot delete the default provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete an AI provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{id}/status": {
+      "patch": {
+        "operationId": "AdminAiProvidersController_setStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetProviderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot disable the default provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Enable or disable an AI provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{id}/default": {
+      "post": {
+        "operationId": "AdminAiProvidersController_setDefault_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Provider is disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Make this the default provider",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/admin/providers/{id}/health-check": {
+      "post": {
+        "description": "Makes a cheap authenticated call (list models) and records the result.",
+        "operationId": "AdminAiProvidersController_healthCheck_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AI provider not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Check provider connectivity and API key validity",
+        "tags": [
+          "Admin · AI Providers"
+        ]
+      }
+    },
+    "/api/v1/chat": {
+      "post": {
+        "description": "Starts a new conversation or continues one. Uses 1 request from the daily quota (refunded if the provider fails).",
+        "operationId": "ChatController_send_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Daily plan limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI provider returned an error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No AI provider available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Send a prompt and receive the full AI response",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/api/v1/chat/stream": {
+      "post": {
+        "description": "Response is `text/event-stream`. Events, in order:\n- `meta`  → `{ conversationId, provider, model }`\n- `delta` → `{ text }` (many; append them)\n- `done`  → same body as `POST /chat`\n- `error` → `{ message }` if the provider fails mid-stream\n\nUse `fetch()` + a stream reader on the client (EventSource only supports GET).\nClosing the connection aborts the upstream AI request.",
+        "operationId": "ChatController_stream_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "example": "event: meta\ndata: {\"conversationId\":\"…\",\"provider\":{\"id\":\"…\",\"name\":\"OpenAI\"},\"model\":\"gpt-5-mini\"}\n\nevent: delta\ndata: {\"text\":\"Hello\"}\n\nevent: done\ndata: {\"conversationId\":\"…\",\"userMessage\":{…},\"assistantMessage\":{…}}\n\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Daily plan limit reached",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No AI provider available",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Send a prompt and stream the response (Server-Sent Events)",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/api/v1/chat/conversations": {
+      "get": {
+        "operationId": "ChatController_list_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedConversationsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List my conversations (most recently active first)",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/api/v1/chat/conversations/{id}": {
+      "get": {
+        "operationId": "ChatController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a conversation with all its messages",
+        "tags": [
+          "Chat"
+        ]
+      },
+      "patch": {
+        "operationId": "ChatController_rename_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Rename a conversation",
+        "tags": [
+          "Chat"
+        ]
+      },
+      "delete": {
+        "operationId": "ChatController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete a conversation and its messages",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "post": {
+        "description": "Returns web results plus a short AI answer citing them. Identical (normalized) queries are served from a shared cache until the TTL expires. Uses 1 request from the daily quota.",
+        "operationId": "SearchController_run_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Daily plan limit reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Search engine failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Run an AI-assisted web search",
+        "tags": [
+          "Web Search"
+        ]
+      }
+    },
+    "/api/v1/search/history": {
+      "get": {
+        "operationId": "SearchController_history_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedSearchHistoryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "My search history (newest first)",
+        "tags": [
+          "Web Search"
+        ]
+      },
+      "delete": {
+        "operationId": "SearchController_clear_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Clear my entire search history",
+        "tags": [
+          "Web Search"
+        ]
+      }
+    },
+    "/api/v1/search/history/{id}": {
+      "delete": {
+        "operationId": "SearchController_deleteOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Search not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete one search from my history",
+        "tags": [
+          "Web Search"
+        ]
+      }
+    },
+    "/api/v1/search/recent": {
+      "get": {
+        "operationId": "SearchController_recent_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecentSearchDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "My recent distinct searches",
+        "tags": [
+          "Web Search"
+        ]
+      }
+    },
+    "/api/v1/search/suggestions": {
+      "get": {
+        "description": "Your own past searches rank first, then popular searches from all users.",
+        "operationId": "SearchController_suggestions_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "Prefix typed so far",
+            "schema": {
+              "example": "nest",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 20,
+              "default": 8,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuggestionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Autocomplete suggestions for a prefix",
+        "tags": [
+          "Web Search"
+        ]
+      }
+    },
+    "/api/v1/admin/search-cache": {
+      "delete": {
+        "operationId": "AdminSearchController_purge_v1",
+        "parameters": [
+          {
+            "name": "expiredOnly",
+            "required": false,
+            "in": "query",
+            "description": "Default true",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearedDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Purge the web search result cache",
+        "tags": [
+          "Admin · System"
+        ]
+      }
+    },
+    "/api/v1/admin/dashboard": {
+      "get": {
+        "operationId": "AdminAnalyticsController_dashboard_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Headline statistics for the admin dashboard",
+        "tags": [
+          "Admin · Dashboard & Analytics"
+        ]
+      }
+    },
+    "/api/v1/admin/analytics/usage": {
+      "get": {
+        "description": "Daily requests/tokens/active users (gap-filled), per-provider token usage and latency, top endpoints with avg & p95 latency, status code classes, and top users.",
+        "operationId": "AdminAnalyticsController_usage_v1",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 90,
+              "default": 7,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics report"
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "API usage analytics",
+        "tags": [
+          "Admin · Dashboard & Analytics"
+        ]
+      }
+    },
+    "/api/v1/admin/logs": {
+      "get": {
+        "operationId": "AdminAnalyticsController_logs_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "statusCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 429,
+              "type": "number"
+            }
+          },
+          {
+            "name": "errorsOnly",
+            "required": false,
+            "in": "query",
+            "description": "true = only 4xx/5xx responses",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "method",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+              ]
+            }
+          },
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "description": "Path contains",
+            "schema": {
+              "example": "/chat",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-09-30T23:59:59Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedRequestLogsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Browse API request logs (newest first)",
+        "tags": [
+          "Admin · Dashboard & Analytics"
+        ]
+      }
+    },
+    "/api/v1/admin/subscriptions": {
+      "get": {
+        "operationId": "AdminSubscriptionsController_list_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "CANCELED",
+                "EXPIRED"
+              ]
+            }
+          },
+          {
+            "name": "planCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FREE",
+                "PREMIUM"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAdminSubscriptionsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List subscriptions (filter by status / plan)",
+        "tags": [
+          "Admin · Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/admin/plans": {
+      "get": {
+        "operationId": "AdminSubscriptionsController_plans_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List all plans including inactive ones, with active subscriber counts",
+        "tags": [
+          "Admin · Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/admin/plans/{code}": {
+      "patch": {
+        "description": "Limits are data, not code: changes apply immediately to every subscriber.",
+        "operationId": "AdminSubscriptionsController_updatePlan_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "FREE",
+                "PREMIUM"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Plan not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Edit a plan (price, daily limit, features, availability)",
+        "tags": [
+          "Admin · Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "AdminUsersController_list_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Matches email or name (case-insensitive)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "USER",
+                "ADMIN"
+              ]
+            }
+          },
+          {
+            "name": "isActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAdminUsersDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List / search users",
+        "tags": [
+          "Admin · Users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "get": {
+        "operationId": "AdminUsersController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a user's details, activity counts and today's usage",
+        "tags": [
+          "Admin · Users"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminUsersController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot demote or suspend yourself",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Change role, suspend/reactivate, or rename a user",
+        "tags": [
+          "Admin · Users"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminUsersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "Cannot delete yourself",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Delete a user permanently",
+        "tags": [
+          "Admin · Users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/subscription": {
+      "patch": {
+        "operationId": "AdminUsersController_setPlan_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User is already on that plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Change a user's plan (e.g. grant Premium)",
+        "tags": [
+          "Admin · Users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/logout": {
+      "post": {
+        "operationId": "AdminUsersController_logout_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Force-logout a user from every device",
+        "tags": [
+          "Admin · Users"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Returns 200 when the app and database are reachable, 503 otherwise.",
+        "operationId": "HealthController_check_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "timestamp": "2026-09-27T10:00:00.000Z",
+                    "uptimeSeconds": 3600,
+                    "checks": {
+                      "database": {
+                        "status": "up",
+                        "latencyMs": 2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "error",
+                    "timestamp": "2026-09-27T10:00:00.000Z",
+                    "uptimeSeconds": 3600,
+                    "checks": {
+                      "database": {
+                        "status": "down",
+                        "error": "timeout"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health check for load balancers / Docker / Kubernetes",
+        "tags": [
+          "System"
+        ]
+      }
+    },
+    "/api/v1/admin/system/health": {
+      "get": {
+        "description": "App version, memory, database version/size/connections, and AI provider health.",
+        "operationId": "HealthController_detailed_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Detailed health report"
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requires ADMIN role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Detailed system health",
+        "tags": [
+          "System",
+          "Admin · System"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "EchoGPT API",
+    "description": "Backend REST API for the **EchoGPT** multi-AI chat Chrome extension.\n\n**Authentication:** call `POST /auth/login`, click **Authorize**, and paste the `accessToken`.\nAccess tokens last 15 minutes; use `POST /auth/refresh` with the refresh token to get a new pair.\n\n**Errors** always have the shape `{ statusCode, error, message, path, timestamp }`.\n\nSeeded admin (development): `admin@echogpt.local` / `Admin@12345`",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Registration, login, token refresh, logout, email verification"
+    },
+    {
+      "name": "Users",
+      "description": "Current user profile, password, sessions, account deletion"
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Plans, subscription status, upgrade/downgrade"
+    },
+    {
+      "name": "Usage",
+      "description": "Daily quota and remaining requests"
+    },
+    {
+      "name": "AI Providers",
+      "description": "Providers and models available to users"
+    },
+    {
+      "name": "Chat",
+      "description": "Send prompts, stream responses, conversation history"
+    },
+    {
+      "name": "Web Search",
+      "description": "AI-assisted search, history, recent searches, suggestions"
+    },
+    {
+      "name": "System",
+      "description": "API info and health checks"
+    },
+    {
+      "name": "Admin · Dashboard & Analytics",
+      "description": "Statistics, usage analytics, request logs"
+    },
+    {
+      "name": "Admin · Users",
+      "description": "User management"
+    },
+    {
+      "name": "Admin · Subscriptions",
+      "description": "Subscriptions and plan configuration"
+    },
+    {
+      "name": "Admin · AI Providers",
+      "description": "Provider CRUD, keys, default selection, health checks"
+    },
+    {
+      "name": "Admin · System",
+      "description": "Detailed health, cache maintenance"
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ngPass!",
+            "minLength": 8,
+            "maxLength": 72
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "AuthUserSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7b1d7c6e-2f0a-4a8e-9a55-0f3c1f5d9d21"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "object",
+            "example": "Jane Doe",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ],
+            "example": "USER"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "emailVerified"
+        ]
+      },
+      "TokensDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 900,
+            "description": "Access token lifetime in seconds"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tokenType",
+          "expiresIn"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthUserSummaryDto"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/TokensDto"
+          }
+        },
+        "required": [
+          "user",
+          "tokens"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": [
+              "email must be an email"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/v1/auth/register"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "path",
+          "timestamp"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ngPass!"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token returned by login/register/refresh"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "MessageResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Operation successful"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "VerifyEmailDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token from the verification link"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "UserPlanDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "example": "FREE"
+          },
+          "name": {
+            "type": "string",
+            "example": "Free"
+          },
+          "dailyRequestLimit": {
+            "type": "number",
+            "example": 20
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "dailyRequestLimit"
+        ]
+      },
+      "UserProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7b1d7c6e-2f0a-4a8e-9a55-0f3c1f5d9d21"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "object",
+            "example": "Jane Doe",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ],
+            "example": "USER"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "emailVerifiedAt": {
+            "type": "object",
+            "example": "2026-09-27T10:00:00.000Z",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "example": "2026-09-27T10:00:00.000Z",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "plan": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserPlanDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "avatarUrl",
+          "role",
+          "isActive",
+          "emailVerifiedAt",
+          "lastLoginAt",
+          "createdAt",
+          "plan"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://example.com/avatar.png"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "Str0ngPass!"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "EvenStr0nger!"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0b8a0c1e-6a55-4f8e-9e44-1c9d0f0e2a11"
+          },
+          "userAgent": {
+            "type": "object",
+            "example": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "nullable": true
+          },
+          "ipAddress": {
+            "type": "object",
+            "example": "::1",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "lastUsedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-10-04T10:00:00.000Z"
+          },
+          "current": {
+            "type": "boolean",
+            "example": true,
+            "description": "True for the session making this request"
+          }
+        },
+        "required": [
+          "id",
+          "userAgent",
+          "ipAddress",
+          "createdAt",
+          "lastUsedAt",
+          "expiresAt",
+          "current"
+        ]
+      },
+      "DeleteAccountDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "Str0ngPass!",
+            "description": "Current password, required to confirm deletion"
+          }
+        },
+        "required": [
+          "password"
+        ]
+      },
+      "PlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "b3e1c1c2-9a51-4d7e-8f11-2f5e6d7c8b90"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "example": "PREMIUM"
+          },
+          "name": {
+            "type": "string",
+            "example": "Premium"
+          },
+          "description": {
+            "type": "object",
+            "example": "For power users",
+            "nullable": true
+          },
+          "priceCents": {
+            "type": "number",
+            "example": 999,
+            "description": "Monthly price in cents"
+          },
+          "dailyRequestLimit": {
+            "type": "number",
+            "example": 1000
+          },
+          "features": {
+            "example": [
+              "1000 AI requests per day",
+              "Streaming responses"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "priceCents",
+          "dailyRequestLimit",
+          "features"
+        ]
+      },
+      "SubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "5c0f5a0e-1d7b-4c47-9f39-6f0f1a2b3c4d"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELED",
+              "EXPIRED"
+            ],
+            "example": "ACTIVE"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanDto"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "currentPeriodEnd": {
+            "type": "object",
+            "example": "2026-10-27T10:00:00.000Z",
+            "nullable": true,
+            "description": "End of the paid period; null for the free plan"
+          },
+          "canceledAt": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "plan",
+          "startedAt",
+          "currentPeriodEnd",
+          "canceledAt"
+        ]
+      },
+      "ChangePlanDto": {
+        "type": "object",
+        "properties": {
+          "planCode": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "example": "PREMIUM"
+          }
+        },
+        "required": [
+          "planCode"
+        ]
+      },
+      "UsageDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "example": "FREE"
+          },
+          "dailyLimit": {
+            "type": "number",
+            "example": 20
+          },
+          "used": {
+            "type": "number",
+            "example": 3
+          },
+          "remaining": {
+            "type": "number",
+            "example": 17
+          },
+          "tokensUsed": {
+            "type": "number",
+            "example": 1520,
+            "description": "AI tokens consumed today"
+          },
+          "resetsAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-28T00:00:00.000Z",
+            "description": "When the daily counter resets (UTC midnight)"
+          }
+        },
+        "required": [
+          "plan",
+          "dailyLimit",
+          "used",
+          "remaining",
+          "tokensUsed",
+          "resetsAt"
+        ]
+      },
+      "AvailableProviderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a4f1c1c2-9a51-4d7e-8f11-2f5e6d7c8b90"
+          },
+          "name": {
+            "type": "string",
+            "example": "OpenAI"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "OPENAI",
+              "ANTHROPIC",
+              "GEMINI"
+            ]
+          },
+          "defaultModel": {
+            "type": "string",
+            "example": "gpt-5-mini"
+          },
+          "models": {
+            "example": [
+              "gpt-5-mini",
+              "gpt-5"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "defaultModel",
+          "models",
+          "isDefault"
+        ]
+      },
+      "CreateAiProviderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "OpenAI",
+            "description": "Unique display name"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "OPENAI",
+              "ANTHROPIC",
+              "GEMINI"
+            ],
+            "example": "OPENAI"
+          },
+          "apiKey": {
+            "type": "string",
+            "example": "sk-proj-xxxxxxxxxxxxxxxx",
+            "description": "Vendor API key. Stored encrypted (AES-256-GCM); never returned.",
+            "writeOnly": true
+          },
+          "defaultModel": {
+            "type": "string",
+            "example": "gpt-5-mini"
+          },
+          "models": {
+            "example": [
+              "gpt-5-mini",
+              "gpt-5"
+            ],
+            "description": "Models users may pick. The default model is always allowed.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "baseUrl": {
+            "type": "string",
+            "example": "https://api.openai.com/v1",
+            "description": "Override the vendor base URL (proxies, Azure, gateways)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false,
+            "description": "Make this the default provider (unsets the previous default)"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "apiKey",
+          "defaultModel"
+        ]
+      },
+      "AiProviderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a4f1c1c2-9a51-4d7e-8f11-2f5e6d7c8b90"
+          },
+          "name": {
+            "type": "string",
+            "example": "OpenAI"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "OPENAI",
+              "ANTHROPIC",
+              "GEMINI"
+            ]
+          },
+          "baseUrl": {
+            "type": "object",
+            "example": null,
+            "nullable": true
+          },
+          "defaultModel": {
+            "type": "string",
+            "example": "gpt-5-mini"
+          },
+          "models": {
+            "example": [
+              "gpt-5-mini",
+              "gpt-5"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "apiKeyLast4": {
+            "type": "string",
+            "example": "x7Qa",
+            "description": "Last 4 characters of the API key"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": true
+          },
+          "healthStatus": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "HEALTHY",
+              "UNHEALTHY"
+            ],
+            "example": "HEALTHY"
+          },
+          "lastHealthCheckAt": {
+            "type": "object",
+            "example": "2026-09-27T10:00:00.000Z",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "baseUrl",
+          "defaultModel",
+          "models",
+          "apiKeyLast4",
+          "isEnabled",
+          "isDefault",
+          "healthStatus",
+          "lastHealthCheckAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "HealthCheckResultDto": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "example": "a4f1c1c2-9a51-4d7e-8f11-2f5e6d7c8b90"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "HEALTHY",
+              "UNHEALTHY"
+            ],
+            "example": "HEALTHY"
+          },
+          "latencyMs": {
+            "type": "number",
+            "example": 212
+          },
+          "error": {
+            "type": "string",
+            "example": "Upstream responded 401: invalid api key"
+          },
+          "checkedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "providerId",
+          "status",
+          "latencyMs",
+          "checkedAt"
+        ]
+      },
+      "UpdateAiProviderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "OpenAI",
+            "description": "Unique display name"
+          },
+          "apiKey": {
+            "type": "string",
+            "example": "sk-proj-xxxxxxxxxxxxxxxx",
+            "description": "Vendor API key. Stored encrypted (AES-256-GCM); never returned.",
+            "writeOnly": true
+          },
+          "defaultModel": {
+            "type": "string",
+            "example": "gpt-5-mini"
+          },
+          "models": {
+            "example": [
+              "gpt-5-mini",
+              "gpt-5"
+            ],
+            "description": "Models users may pick. The default model is always allowed.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "baseUrl": {
+            "type": "string",
+            "example": "https://api.openai.com/v1",
+            "description": "Override the vendor base URL (proxies, Azure, gateways)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "SetProviderStatusDto": {
+        "type": "object",
+        "properties": {
+          "isEnabled": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "isEnabled"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Explain quantum entanglement in one paragraph."
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Continue an existing conversation. Omit to start a new one."
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "AI provider to use. Defaults to the conversation's last provider, then the system default."
+          },
+          "model": {
+            "type": "string",
+            "example": "gpt-5-mini",
+            "description": "Model to use. Must be in the provider's model list."
+          },
+          "systemPrompt": {
+            "type": "string",
+            "example": "You are a concise assistant."
+          },
+          "temperature": {
+            "type": "number",
+            "example": 0.7,
+            "minimum": 0,
+            "maximum": 2
+          },
+          "maxTokens": {
+            "type": "number",
+            "example": 1024,
+            "minimum": 1,
+            "maximum": 8192
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ProviderRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a4f1c1c2-9a51-4d7e-8f11-2f5e6d7c8b90"
+          },
+          "name": {
+            "type": "string",
+            "example": "OpenAI"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "OPENAI",
+              "ANTHROPIC",
+              "GEMINI"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type"
+        ]
+      },
+      "MessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "e2b6b8a4-0c1f-4a8d-9e0f-3c2b1a0d9e8f"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "SYSTEM",
+              "USER",
+              "ASSISTANT"
+            ],
+            "example": "ASSISTANT"
+          },
+          "content": {
+            "type": "string",
+            "example": "Quantum entanglement is ..."
+          },
+          "model": {
+            "type": "object",
+            "example": "gpt-5-mini",
+            "nullable": true
+          },
+          "provider": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderRefDto"
+              }
+            ]
+          },
+          "promptTokens": {
+            "type": "object",
+            "example": 42,
+            "nullable": true
+          },
+          "completionTokens": {
+            "type": "object",
+            "example": 180,
+            "nullable": true
+          },
+          "latencyMs": {
+            "type": "object",
+            "example": 1834,
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "content",
+          "model",
+          "provider",
+          "promptTokens",
+          "completionTokens",
+          "latencyMs",
+          "createdAt"
+        ]
+      },
+      "ChatResponseDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "example": "9d7e3f0a-2b1c-4d5e-8f9a-0b1c2d3e4f5a"
+          },
+          "userMessage": {
+            "$ref": "#/components/schemas/MessageDto"
+          },
+          "assistantMessage": {
+            "$ref": "#/components/schemas/MessageDto"
+          }
+        },
+        "required": [
+          "conversationId",
+          "userMessage",
+          "assistantMessage"
+        ]
+      },
+      "ConversationSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "9d7e3f0a-2b1c-4d5e-8f9a-0b1c2d3e4f5a"
+          },
+          "title": {
+            "type": "string",
+            "example": "Explain quantum entanglement"
+          },
+          "model": {
+            "type": "object",
+            "example": "gpt-5-mini",
+            "nullable": true
+          },
+          "provider": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderRefDto"
+              }
+            ]
+          },
+          "messageCount": {
+            "type": "number",
+            "example": 6
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:05:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "model",
+          "provider",
+          "messageCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 42
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "PaginatedConversationsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationSummaryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "ConversationDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "9d7e3f0a-2b1c-4d5e-8f9a-0b1c2d3e4f5a"
+          },
+          "title": {
+            "type": "string",
+            "example": "Explain quantum entanglement"
+          },
+          "model": {
+            "type": "object",
+            "example": "gpt-5-mini",
+            "nullable": true
+          },
+          "provider": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderRefDto"
+              }
+            ]
+          },
+          "messageCount": {
+            "type": "number",
+            "example": 6
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:05:00.000Z"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "model",
+          "provider",
+          "messageCount",
+          "createdAt",
+          "updatedAt",
+          "messages"
+        ]
+      },
+      "RenameConversationDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Quantum physics notes"
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "SearchQueryDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "example": "latest NestJS release notes"
+          },
+          "summarize": {
+            "type": "boolean",
+            "default": true,
+            "description": "Ask the default AI provider to write a short answer from the results"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "SearchResultDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "NestJS 12 released"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://example.com/nestjs-12"
+          },
+          "snippet": {
+            "type": "string",
+            "example": "NestJS 12 brings native ESM support…"
+          }
+        },
+        "required": [
+          "title",
+          "url",
+          "snippet"
+        ]
+      },
+      "SearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1f7c3e8a-1b2c-4d3e-9f0a-1b2c3d4e5f60"
+          },
+          "query": {
+            "type": "string",
+            "example": "latest NestJS release notes"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResultDto"
+            }
+          },
+          "answer": {
+            "type": "object",
+            "example": "NestJS 12 was released with native ESM support [1]…",
+            "nullable": true,
+            "description": "AI-written answer citing results as [n]; null if summarization was off or failed"
+          },
+          "fromCache": {
+            "type": "boolean",
+            "example": false,
+            "description": "True when served from the result cache"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "query",
+          "results",
+          "answer",
+          "fromCache",
+          "createdAt"
+        ]
+      },
+      "SearchHistoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1f7c3e8a-1b2c-4d3e-9f0a-1b2c3d4e5f60"
+          },
+          "query": {
+            "type": "string",
+            "example": "latest NestJS release notes"
+          },
+          "resultCount": {
+            "type": "number",
+            "example": 5
+          },
+          "fromCache": {
+            "type": "boolean",
+            "example": false
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "query",
+          "resultCount",
+          "fromCache",
+          "createdAt"
+        ]
+      },
+      "PaginatedSearchHistoryDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchHistoryItemDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "ClearedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "example": 14
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "RecentSearchDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "example": "latest NestJS release notes"
+          },
+          "lastSearchedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-09-27T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "query",
+          "lastSearchedAt"
+        ]
+      },
+      "SuggestionDto": {
+        "type": "object",
+        "properties": {
+          "suggestion": {
+            "type": "string",
+            "example": "nestjs guards"
+          },
+          "count": {
+            "type": "number",
+            "example": 12,
+            "description": "How many times this was searched"
+          },
+          "fromHistory": {
+            "type": "boolean",
+            "example": true,
+            "description": "You have searched this before"
+          }
+        },
+        "required": [
+          "suggestion",
+          "count",
+          "fromHistory"
+        ]
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "object",
+            "example": {
+              "total": 120,
+              "active": 118,
+              "newToday": 4,
+              "newLast7Days": 31
+            }
+          },
+          "activeSubscriptions": {
+            "type": "object",
+            "example": {
+              "FREE": 100,
+              "PREMIUM": 20
+            }
+          },
+          "content": {
+            "type": "object",
+            "example": {
+              "conversations": 540,
+              "messages": 4210,
+              "webSearches": 880
+            }
+          },
+          "today": {
+            "type": "object",
+            "example": {
+              "aiRequests": 310,
+              "tokens": 182000
+            }
+          },
+          "last24h": {
+            "type": "object",
+            "example": {
+              "requests": 5120,
+              "errors": 12,
+              "errorRate": 0.0023
+            }
+          },
+          "providers": {
+            "type": "object",
+            "example": {
+              "total": 3,
+              "enabled": 2,
+              "healthy": 2
+            }
+          },
+          "activeSessions": {
+            "type": "number",
+            "example": 87
+          }
+        },
+        "required": [
+          "users",
+          "activeSubscriptions",
+          "content",
+          "today",
+          "last24h",
+          "providers",
+          "activeSessions"
+        ]
+      },
+      "RequestLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1024",
+            "description": "BigInt id serialized as string"
+          },
+          "method": {
+            "type": "string",
+            "example": "POST"
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/v1/chat"
+          },
+          "route": {
+            "type": "object",
+            "example": "/api/v1/chat",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "number",
+            "example": 200
+          },
+          "durationMs": {
+            "type": "number",
+            "example": 812
+          },
+          "ipAddress": {
+            "type": "object",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "object",
+            "nullable": true
+          },
+          "user": {
+            "type": "object",
+            "nullable": true,
+            "example": {
+              "id": "7b1d…",
+              "email": "jane@example.com"
+            }
+          },
+          "providerId": {
+            "type": "object",
+            "nullable": true
+          },
+          "tokensUsed": {
+            "type": "object",
+            "nullable": true,
+            "example": 350
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "method",
+          "path",
+          "route",
+          "statusCode",
+          "durationMs",
+          "ipAddress",
+          "userAgent",
+          "user",
+          "providerId",
+          "tokensUsed",
+          "createdAt"
+        ]
+      },
+      "PaginatedRequestLogsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestLogDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "AdminSubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELED",
+              "EXPIRED"
+            ]
+          },
+          "user": {
+            "type": "object",
+            "example": {
+              "id": "7b1d…",
+              "email": "jane@example.com",
+              "name": "Jane"
+            }
+          },
+          "plan": {
+            "type": "object",
+            "example": {
+              "code": "PREMIUM",
+              "name": "Premium"
+            }
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentPeriodEnd": {
+            "type": "object",
+            "nullable": true
+          },
+          "canceledAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "user",
+          "plan",
+          "startedAt",
+          "currentPeriodEnd",
+          "canceledAt"
+        ]
+      },
+      "PaginatedAdminSubscriptionsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSubscriptionDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "UpdatePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Premium"
+          },
+          "description": {
+            "type": "string",
+            "example": "For power users"
+          },
+          "priceCents": {
+            "type": "number",
+            "example": 1299,
+            "description": "Monthly price in cents"
+          },
+          "dailyRequestLimit": {
+            "type": "number",
+            "example": 2000
+          },
+          "features": {
+            "example": [
+              "2000 AI requests per day"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false hides the plan from new upgrades"
+          }
+        }
+      },
+      "AdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7b1d7c6e-2f0a-4a8e-9a55-0f3c1f5d9d21"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "object",
+            "example": "Jane Doe",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "emailVerifiedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "plan",
+          "isActive",
+          "emailVerifiedAt",
+          "lastLoginAt",
+          "createdAt"
+        ]
+      },
+      "PaginatedAdminUsersDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "AdminUserCountsDto": {
+        "type": "object",
+        "properties": {
+          "conversations": {
+            "type": "number",
+            "example": 12
+          },
+          "webSearches": {
+            "type": "number",
+            "example": 30
+          },
+          "activeSessions": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "conversations",
+          "webSearches",
+          "activeSessions"
+        ]
+      },
+      "AdminUserUsageDto": {
+        "type": "object",
+        "properties": {
+          "dailyLimit": {
+            "type": "number",
+            "example": 20
+          },
+          "used": {
+            "type": "number",
+            "example": 4
+          },
+          "remaining": {
+            "type": "number",
+            "example": 16
+          },
+          "tokensUsed": {
+            "type": "number",
+            "example": 820
+          }
+        },
+        "required": [
+          "dailyLimit",
+          "used",
+          "remaining",
+          "tokensUsed"
+        ]
+      },
+      "AdminUserDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7b1d7c6e-2f0a-4a8e-9a55-0f3c1f5d9d21"
+          },
+          "email": {
+            "type": "string",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "object",
+            "example": "Jane Doe",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ],
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "emailVerifiedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/AdminUserCountsDto"
+          },
+          "usageToday": {
+            "$ref": "#/components/schemas/AdminUserUsageDto"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "plan",
+          "isActive",
+          "emailVerifiedAt",
+          "lastLoginAt",
+          "createdAt",
+          "counts",
+          "usageToday"
+        ]
+      },
+      "AdminUpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false = suspend (also logs the user out everywhere)"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe"
+          }
+        }
+      }
+    }
+  }
+}
