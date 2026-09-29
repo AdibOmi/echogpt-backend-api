@@ -1,0 +1,56 @@
+# Development:  docker compose up -d                      → Postgres only (run the API with npm run start:dev)
+# Full stack:   docker compose --profile prod up -d --build → Postgres + migrations/seed + API on :3000
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: echogpt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-echogpt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-echogpt}
+      POSTGRES_DB: ${POSTGRES_DB:-echogpt}
+    ports:
+      - '${POSTGRES_PORT:-5433}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-echogpt} -d ${POSTGRES_DB:-echogpt}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-off job: apply migrations and seed, then exit.
+  migrate:
+    profiles: [prod]
+    build:
+      context: .
+      target: migrate
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-echogpt}:${POSTGRES_PASSWORD:-echogpt}@postgres:5432/${POSTGRES_DB:-echogpt}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    profiles: [prod]
+    build:
+      context: .
+      target: runtime
+    container_name: echogpt-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-echogpt}:${POSTGRES_PASSWORD:-echogpt}@postgres:5432/${POSTGRES_DB:-echogpt}?schema=public
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

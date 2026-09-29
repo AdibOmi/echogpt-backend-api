@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# environment — NEVER commit real secrets
+.env
+.env.*
+!.env.example
+
+# prisma generated client
+src/generated/
+
+# logs & coverage
+logs/
+*.log
+coverage/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+/src/generated/prisma
+
+# local notes
+MANUAL_TESTING.md
+
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+

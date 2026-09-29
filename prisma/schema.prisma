@@ -1,0 +1,312 @@
+// EchoGPT database schema
+// Docs: https://pris.ly/d/prisma-schema
+//
+// Conventions:
+//  - Models are PascalCase in code, tables are snake_case in Postgres (@@map / @map).
+//  - UUID primary keys for user-facing entities (not guessable, safe to expose in URLs).
+//  - BigInt autoincrement for high-volume append-only logs (smaller + faster to index).
+//  - Every foreign key used in a WHERE or JOIN has an index.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum RoleName {
+  USER
+  ADMIN
+}
+
+enum PlanCode {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
+enum ProviderType {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
+enum HealthStatus {
+  UNKNOWN
+  HEALTHY
+  UNHEALTHY
+}
+
+enum MessageRole {
+  SYSTEM
+  USER
+  ASSISTANT
+}
+
+// ─────────────────────── Identity & access ───────────────────────
+
+/// Roles live in their own table (not a column on users) so that new roles
+/// or role metadata can be added without a schema change on the users table.
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        RoleName @unique
+  description String?
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id                     String    @id @default(uuid()) @db.Uuid
+  email                  String    @unique
+  passwordHash           String    @map("password_hash")
+  name                   String?
+  avatarUrl              String?   @map("avatar_url")
+  isActive               Boolean   @default(true) @map("is_active")
+  emailVerifiedAt        DateTime? @map("email_verified_at")
+  /// SHA-256 of the one-time verification token (never store the raw token)
+  emailVerifyTokenHash   String?   @unique @map("email_verify_token_hash")
+  emailVerifyTokenExpiry DateTime? @map("email_verify_token_expiry")
+  lastLoginAt            DateTime? @map("last_login_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  roleId Int  @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+
+  sessions      Session[]
+  subscriptions Subscription[]
+  dailyUsage    DailyUsage[]
+  conversations Conversation[]
+  webSearches   WebSearch[]
+  usageLogs     ApiUsageLog[]
+
+  @@index([roleId])
+  @@index([createdAt])
+  @@map("users")
+}
+
+/// One row per logged-in device. Holds a HASH of the current refresh token so
+/// we can revoke a single device (logout) or detect refresh-token reuse.
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  refreshTokenHash String    @map("refresh_token_hash")
+  userAgent        String?   @map("user_agent")
+  ipAddress        String?   @map("ip_address")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastUsedAt       DateTime  @default(now()) @map("last_used_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ─────────────────────── Plans & subscriptions ───────────────────────
+
+/// Plan catalog. Limits live here (data), not in code, so an admin can change
+/// them without a deploy.
+model Plan {
+  id                String   @id @default(uuid()) @db.Uuid
+  code              PlanCode @unique
+  name              String
+  description       String?
+  priceCents        Int      @default(0) @map("price_cents")
+  dailyRequestLimit Int      @map("daily_request_limit")
+  features          String[] @default([])
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+/// Subscription history: a user has many rows over time, at most one ACTIVE
+/// (enforced in the service layer inside a transaction).
+model Subscription {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  planId           String             @map("plan_id") @db.Uuid
+  status           SubscriptionStatus @default(ACTIVE)
+  startedAt        DateTime           @default(now()) @map("started_at")
+  currentPeriodEnd DateTime?          @map("current_period_end")
+  canceledAt       DateTime?          @map("canceled_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@index([userId, status])
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+/// Per-user, per-day request counter. Incremented atomically with an upsert,
+/// which is far cheaper than COUNT(*) over the usage log on every request.
+model DailyUsage {
+  userId       String   @map("user_id") @db.Uuid
+  date         DateTime @db.Date
+  requestCount Int      @default(0) @map("request_count")
+  tokenCount   Int      @default(0) @map("token_count")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, date])
+  @@map("daily_usage")
+}
+
+// ─────────────────────────── AI providers ───────────────────────────
+
+model AiProvider {
+  id                String       @id @default(uuid()) @db.Uuid
+  name              String       @unique
+  type              ProviderType
+  baseUrl           String?      @map("base_url")
+  defaultModel      String       @map("default_model")
+  models            String[]     @default([])
+  /// AES-256-GCM ciphertext ("iv:authTag:ciphertext", base64). Never returned by the API.
+  encryptedApiKey   String       @map("encrypted_api_key")
+  /// Last 4 chars so admins can tell keys apart without seeing them.
+  apiKeyLast4       String       @map("api_key_last4")
+  isEnabled         Boolean      @default(true) @map("is_enabled")
+  isDefault         Boolean      @default(false) @map("is_default")
+  healthStatus      HealthStatus @default(UNKNOWN) @map("health_status")
+  lastHealthCheckAt DateTime?    @map("last_health_check_at")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  conversations Conversation[]
+  messages      Message[]
+  webSearches   WebSearch[]
+  usageLogs     ApiUsageLog[]
+
+  @@index([isEnabled])
+  @@map("ai_providers")
+}
+
+// ─────────────────────────── Chat history ───────────────────────────
+
+/// Chat history is split into conversations (threads) and messages so a
+/// thread's metadata isn't repeated on every message (normalization).
+model Conversation {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  providerId String?  @map("provider_id") @db.Uuid
+  model      String?
+  title      String   @default("New chat")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider AiProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@index([providerId])
+  @@map("conversations")
+}
+
+model Message {
+  id               String      @id @default(uuid()) @db.Uuid
+  conversationId   String      @map("conversation_id") @db.Uuid
+  role             MessageRole
+  content          String
+  providerId       String?     @map("provider_id") @db.Uuid
+  model            String?
+  promptTokens     Int?        @map("prompt_tokens")
+  completionTokens Int?        @map("completion_tokens")
+  latencyMs        Int?        @map("latency_ms")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  provider     AiProvider?  @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([providerId])
+  @@map("messages")
+}
+
+// ─────────────────────────── Web search ───────────────────────────
+
+/// A user's search history (one row per search performed).
+model WebSearch {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  query           String
+  normalizedQuery String   @map("normalized_query")
+  providerId      String?  @map("provider_id") @db.Uuid
+  resultCount     Int      @default(0) @map("result_count")
+  fromCache       Boolean  @default(false) @map("from_cache")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider AiProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([normalizedQuery])
+  @@map("web_searches")
+}
+
+/// Shared result cache keyed by normalized query (not per user), with a TTL.
+model SearchCache {
+  id              String   @id @default(uuid()) @db.Uuid
+  normalizedQuery String   @unique @map("normalized_query")
+  results         Json
+  answer          String?
+  hitCount        Int      @default(0) @map("hit_count")
+  expiresAt       DateTime @map("expires_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("search_cache")
+}
+
+// ─────────────────────────── Observability ───────────────────────────
+
+/// Append-only request log for analytics and the admin "request logs" view.
+/// user_id is SET NULL on account deletion so aggregate analytics survive.
+model ApiUsageLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     String?  @map("user_id") @db.Uuid
+  method     String
+  /// Actual URL path, e.g. /api/v1/chat/conversations/9d7e...
+  path       String
+  /// Matched route pattern, e.g. /api/v1/chat/conversations/:id — low
+  /// cardinality, so analytics can group by endpoint.
+  route      String?
+  statusCode Int      @map("status_code")
+  durationMs Int      @map("duration_ms")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  providerId String?  @map("provider_id") @db.Uuid
+  tokensUsed Int?     @map("tokens_used")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  provider AiProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([statusCode])
+  @@index([providerId])
+  @@index([route])
+  @@map("api_usage_logs")
+}
